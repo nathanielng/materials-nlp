@@ -36,7 +36,8 @@ def txt2doi(txt):
 
 def parse_pdf(filename):
     """
-    Parses
+    Parses a PDF file
+    The DOI is extracted
     """
     d = pdf2text(filename)
     doi = txt2doi(d[0])
@@ -45,6 +46,10 @@ def parse_pdf(filename):
     else:
         print('No DOI found in the following text:')
         print(f'{d[0]}')
+    return {
+        'text': d,
+        'doi': doi
+    }
 
 
 if __name__ == "__main__":
