@@ -1,5 +1,7 @@
 # Scientific Papers NLP
 
+## 1. Background
+
 This is a Natural Language Processing (NLP) engine for scientific papers.
 For the time being, development will be prioritized towards the following
 
@@ -18,3 +20,18 @@ with a general direction to eventually cover at least the following 4 areas:
 2. Engineering
 3. Physics
 4. Chemistry
+
+
+## 2. Usage
+
+### 2.1 Extracting a DOI from a file
+
+```bash
+python src/pdf_extract.py --file $FILE
+```
+
+### 2.2 Extracting multiple DOIs from a folder
+
+```bash
+python src/pdf_extract.py --path $FOLDER
+```
