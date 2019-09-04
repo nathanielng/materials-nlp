@@ -6,6 +6,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import argparse
+import glob
+import os
 import PyPDF2
 import re
 
@@ -52,8 +54,27 @@ def parse_pdf(filename):
     }
 
 
+def get_file_list(path):
+    """
+    Gets the list of files in a given path
+    """
+    os.chdir(os.path.abspath(path))
+    return glob.glob(f'*.pdf')
+
+
+def main(args):
+    if isinstance(args.path, str):
+        file_list = get_file_list(args.path)
+        print(f'PDF files in folder: {args.path}')
+        for i, file in enumerate(file_list):
+            print(f'{i}: {file}')
+    else:
+        parse_pdf(args.file)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="PDF Text Extractor")
-    parser.add_argument('file')
+    parser.add_argument('--path', default=None)
+    parser.add_argument('--file')
     args = parser.parse_args()
-    parse_pdf(args.file)
+    main(args)
