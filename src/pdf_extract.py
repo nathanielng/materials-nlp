@@ -39,17 +39,13 @@ def txt2doi(txt):
 def parse_pdf(filename):
     """
     Parses a PDF file
-    The DOI is extracted
+    Returns a dictionary of text from each page
+    and if available, the DOI of the article
     """
-    d = pdf2text(filename)
-    doi = txt2doi(d[0])
-    if doi is not None:
-        print(f'DOI = "{doi}"')
-    else:
-        print('No DOI found in the following text:')
-        print(f'{d[0]}')
+    page_data = pdf2text(filename)
+    doi = txt2doi(page_data[0])  # extract doi from first page
     return {
-        'text': d,
+        'text': page_data,
         'doi': doi
     }
 
@@ -67,9 +63,21 @@ def main(args):
         file_list = get_file_list(args.path)
         print(f'PDF files in folder: {args.path}')
         for i, file in enumerate(file_list):
-            print(f'{i}: {file}')
+            d = parse_pdf(file)
+            doi = d['doi']
+            if doi is None:
+                print(f'{i}: {file}')
+            else:
+                print(f'{i}: {file} (doi={doi})')
     else:
-        parse_pdf(args.file)
+        d = parse_pdf(args.file)
+        doi = d['doi']
+        page_data = d['text']
+        if doi is not None:
+            print(f'DOI = "{doi}"')
+        else:
+            print('No DOI found in the following text:')
+            print(f'{page_data[0]}')
 
 
 if __name__ == "__main__":
