@@ -6,10 +6,32 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import argparse
+import requests
 import glob
 import os
 import PyPDF2
 import re
+
+
+def convert_arxiv_url(url):
+    """
+    Converts a URL from
+    https://arxiv.org/abs/0000.00000
+    to
+    https://arxiv.org/pdf/0000.00000.pdf
+    """
+    return re.sub(r'/abs/', '/pdf/', url) + '.pdf'
+
+
+def arxiv2pdf(url):
+    """
+    Downloads the PDF associated with a URL of the format
+    https://arxiv.org.abs/0000.00000
+    """
+    response = requests.get(convert_arxiv_url(url), allow_redirects=True)
+    filename = re.sub(r'.*/', '', url) + '.pdf'
+    with open(filename, 'wb') as f:
+        f.write(response.content)
 
 
 def pdf2text(filename):
