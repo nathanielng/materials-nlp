@@ -29,6 +29,13 @@ def arxiv2pdf(url):
     """
     Downloads the PDF associated with a URL of the format
     https://arxiv.org/abs/0000.00000
+
+    Note that PDF access with a 15 seconds delay between
+    requests appears permitted according to:
+    https://arxiv.org/robots.txt
+
+    This subroutine should not be used for bulk downloading. See:
+    https://arxiv.org/help/robots
     """
     pdf_url = convert_arxiv_url(url)
     response = requests.get(pdf_url, allow_redirects=True)
@@ -79,6 +86,18 @@ def txt2doi(txt):
     Extract a DOI from text data
     """
     regex = r'(https?://)?dx\.doi\.org/[0-9.]+/[A-Za-z0-9.]+'
+    m = re.search(regex, txt)
+    if m is not None:
+        return m.group(0)
+    else:
+        return None
+
+
+def detect_arxiv(txt):
+    """
+    Extract an arXiv ID from text data
+    """
+    regex = r'arXiv:[0-9]{4,4}\.[0-9]{5,5}(v[0-9]+)?'
     m = re.search(regex, txt)
     if m is not None:
         return m.group(0)
