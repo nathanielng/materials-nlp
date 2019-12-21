@@ -12,6 +12,8 @@ import os
 import PyPDF2
 import re
 
+from xml.etree.ElementTree import fromstring
+
 
 def convert_arxiv_url(url):
     """
@@ -26,12 +28,38 @@ def convert_arxiv_url(url):
 def arxiv2pdf(url):
     """
     Downloads the PDF associated with a URL of the format
-    https://arxiv.org.abs/0000.00000
+    https://arxiv.org/abs/0000.00000
     """
-    response = requests.get(convert_arxiv_url(url), allow_redirects=True)
+    pdf_url = convert_arxiv_url(url)
+    response = requests.get(pdf_url, allow_redirects=True)
+    if response.status_code != 200:
+        print(f'Failed to download PDF from {pdf_url}')
+        return
     filename = re.sub(r'.*/', '', url) + '.pdf'
     with open(filename, 'wb') as f:
         f.write(response.content)
+
+
+def get_arxiv_metadata(arxiv_id):
+    """
+    Retrieves the metadata associated with an arXiv ID of the form
+    0000.00000
+    """
+    url = f"http://export.arxiv.org/api/query?id_list={arxiv_id}"
+    response = requests.get(url)
+    root = fromstring(response.text)
+    for child in root:
+        if child.tag.endswith('entry'):
+            entry = {}
+            author_list = []
+            for e in child:
+                tag = re.sub(r'\{.*\}', '', e.tag)
+                if tag == 'author':
+                    author_list += [a.text for a in e.getchildren()]
+                else:
+                    entry[tag] = e.text
+            entry['author'] = author_list
+    return entry
 
 
 def pdf2text(filename):
