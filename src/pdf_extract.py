@@ -127,26 +127,34 @@ def get_file_list(path):
     return glob.glob(f'*.pdf')
 
 
+def parse_file(file):
+    d = parse_pdf(file)
+    doi = d['doi']
+    page_data = d['text']
+    if doi is not None:
+        print(f'DOI = "{doi}"')
+    else:
+        print('No DOI found in the following text:')
+        print(f'{page_data[0]}')
+
+
+def parse_folder(path):
+    file_list = get_file_list(path)
+    print(f'PDF files in folder: {path}')
+    for i, file in enumerate(file_list):
+        d = parse_pdf(file)
+        doi = d['doi']
+        if doi is None:
+            print(f'{i}: {file}')
+        else:
+            print(f'{i}: {file} (doi={doi})')
+
+
 def main(args):
     if isinstance(args.path, str):
-        file_list = get_file_list(args.path)
-        print(f'PDF files in folder: {args.path}')
-        for i, file in enumerate(file_list):
-            d = parse_pdf(file)
-            doi = d['doi']
-            if doi is None:
-                print(f'{i}: {file}')
-            else:
-                print(f'{i}: {file} (doi={doi})')
+        parse_folder(args.path)
     else:
-        d = parse_pdf(args.file)
-        doi = d['doi']
-        page_data = d['text']
-        if doi is not None:
-            print(f'DOI = "{doi}"')
-        else:
-            print('No DOI found in the following text:')
-            print(f'{page_data[0]}')
+        parse_file(args.file)
 
 
 if __name__ == "__main__":
