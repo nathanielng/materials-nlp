@@ -15,6 +15,29 @@ import re
 from xml.etree.ElementTree import fromstring
 
 
+# ----- Crossref -----
+def get_doi_metadata(doi):
+    url = f'http://api.crossref.org/works/{doi}'
+    r = requests.get(url)
+    if r.ok is False:
+        print(f'DOI: {doi} lookup returned {r.status_code}')
+        return None
+    data = r.json()
+    if 'message' in data.keys():
+        return data['message']
+    else:
+        return None
+
+
+def extract_title(data):
+    if 'title' in data:
+        title = data['title']
+        if len(title) > 0:
+            return title[0]
+    return None
+
+
+# ----- ArXiv -----
 def convert_arxiv_url(url):
     """
     Converts a URL from
@@ -69,28 +92,16 @@ def get_arxiv_metadata(arxiv_id):
     return entry
 
 
-def pdf2text(filename):
-    """
-    Extracts text from a PDF document using PyPDF2
-    """
-    with open(filename, 'rb') as f:
-        pdf_obj = PyPDF2.PdfFileReader(f)
-        d = {}
-        for i in range(pdf_obj.numPages):
-            d[i] = pdf_obj.getPage(i).extractText()
-    return d
-
-
 def txt2doi(txt):
     """
     Extract a DOI from text data
     """
-    regex = r'(https?://)?dx\.doi\.org/[0-9.]+/[A-Za-z0-9.]+'
+    regex = r'(https?://)?dx\.doi\.org/([0-9.]+/[A-Za-z0-9.]+)'
     m = re.search(regex, txt)
     if m is not None:
-        return m.group(0)
+        return m.group(0), m.group(2)
     else:
-        return None
+        return None, None
 
 
 def detect_arxiv(txt):
@@ -105,6 +116,19 @@ def detect_arxiv(txt):
         return None
 
 
+# ----- PDF File Processing -----
+def pdf2text(filename):
+    """
+    Extracts text from a PDF document using PyPDF2
+    """
+    with open(filename, 'rb') as f:
+        pdf_obj = PyPDF2.PdfFileReader(f)
+        d = {}
+        for i in range(pdf_obj.numPages):
+            d[i] = pdf_obj.getPage(i).extractText()
+    return d
+
+
 def parse_pdf(filename):
     """
     Parses a PDF file
@@ -112,13 +136,14 @@ def parse_pdf(filename):
     and if available, the DOI of the article
     """
     page_data = pdf2text(filename)
-    doi = txt2doi(page_data[0])  # extract doi from first page
+    doi_url, doi = txt2doi(page_data[0])  # extract doi from first page
     return {
         'text': page_data,
         'doi': doi
     }
 
 
+# ----- File & Folder Handling -----
 def get_file_list(path):
     """
     Gets the list of files in a given path
@@ -146,8 +171,18 @@ def parse_folder(path):
         doi = d['doi']
         if doi is None:
             print(f'{i}: {file}')
-        else:
-            print(f'{i}: {file} (doi={doi})')
+            continue
+        print(f'{i}: {file} (doi={doi})')
+        data = get_doi_metadata(doi)
+        if data is None:
+            continue
+        title = extract_title(data)
+        if title is not None:
+            newname = f'{title}.pdf'
+            ans = input(f"Rename {file} to {newname} (Y/N)? ")
+            if ans[0].upper() == 'Y':
+                newname = re.sub(r'[:/]', '-', newname)
+                os.rename(file, newname)
 
 
 def main(args):
