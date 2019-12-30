@@ -2,7 +2,7 @@
 
 ## 1. Background
 
-This is a set of coding tools for scientific research.  There are currently two parts - a parsing and natural language processing engine 
+This is a set of coding tools for scientific research.  There will be two parts - (1) a parsing and natural language processing engine, and (2) a bot linking to Twitter feeds and Discord.
 
 ### 1.1 Parsing & Natural Language Processing Engine and API Client
 
@@ -10,7 +10,7 @@ This is a parsing & Natural Language Processing (NLP) engine and API Client for 
 It will allow papers in PDF format to be parsed for their DOI's (digital object identifiers)
 or their arXiv IDs.
 
-Inn terms of API cliennts, for the time being, development will be prioritized towards the following
+In terms of API clients, for the time being, development will be prioritized towards the following
 
 1. Elsevier API at [dev.elsevier.com/](http://dev.elsevier.com/)
 2. [Crossref API](https://www.crossref.org/services/metadata-delivery/rest-api/) via [crossref_commons_py](https://gitlab.com/crossref/crossref_commons_py)
