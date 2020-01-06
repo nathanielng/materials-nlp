@@ -15,6 +15,10 @@ import re
 from xml.etree.ElementTree import fromstring
 
 
+# ----- Setup -----
+DEBUG = os.getenv('DEBUG')
+
+
 # ----- Crossref -----
 def get_doi_metadata(doi):
     url = f'http://api.crossref.org/works/{doi}'
@@ -96,12 +100,15 @@ def txt2doi(txt):
     """
     Extract a DOI from text data
     """
-    regex = r'(https?://)?dx\.doi\.org/([0-9.]+/[A-Za-z0-9.]+)'
-    m = re.search(regex, txt)
-    if m is not None:
-        return m.group(0), m.group(2)
-    else:
-        return None, None
+    regex_arr = [
+        r'(https?://)?dx\.doi\.org/([0-9.]+/[A-Za-z0-9.]+)',
+        r'(DOI|doi):([0-9.]+/[A-Za-z0-9.]+)'
+    ]
+    for regex in regex_arr:
+        m = re.search(regex, txt)
+        if m is not None:
+            return m.group(0), m.group(2)
+    return None, None
 
 
 def detect_arxiv(txt):
@@ -170,7 +177,11 @@ def parse_folder(path):
         d = parse_pdf(file)
         doi = d['doi']
         if doi is None:
-            print(f'{i}: {file}')
+            print(f'{i}: {file} - DOI not found on the first page')
+            if DEBUG is not None:
+                ans = input('Show first page data? (Y/N)')
+                if ans[0].lower() == 'y':
+                    print(d['text'][0])
             continue
         print(f'{i}: {file} (doi={doi})')
         data = get_doi_metadata(doi)
@@ -179,7 +190,7 @@ def parse_folder(path):
         title = extract_title(data)
         if title is not None:
             newname = f'{title}.pdf'
-            ans = input(f"Rename {file} to {newname} (Y/N)? ")
+            ans = input(f'Rename "{file}" to "{newname}" (Y/N)? ')
             if ans[0].upper() == 'Y':
                 newname = re.sub(r'[:/]', '-', newname)
                 os.rename(file, newname)
