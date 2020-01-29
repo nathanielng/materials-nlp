@@ -10,4 +10,6 @@ def test_txt2doi():
     Here is a doi http://dx.doi.org/10.1234/123.456.789 that should be detected.
     This is the last line of text.
     """
-    assert pdf_extract.txt2doi(txt) == "http://dx.doi.org/10.1234/123.456.789"
+    url, doi = pdf_extract.txt2doi(txt)
+    assert url == "http://dx.doi.org/10.1234/123.456.789"
+
