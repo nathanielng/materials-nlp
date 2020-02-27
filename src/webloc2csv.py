@@ -108,25 +108,7 @@ def bookmarkfolder2df(folder, clean_urls=True):
     return df
 
 
-def bookmarkfolder2file(path, dest):
-    folder = os.path.abspath(path)
-    df = bookmarkfolder2df(folder)
-    if df is None:
-        return
-    df = add_tags(df)
-    if dest is None:
-        outfile = 'my_bookmarks.csv'
-    else:
-        outfile = args.output
-    filename, ext = os.path.splitext(outfile)
-    if ext == '.csv':
-        print(f"Exporting {len(df)} bookmarks to {outfile}")
-        print('Sorting dataframe by tags')
-        df = df.sort_values('tags').reset_index(drop=True)
-        df.to_csv(outfile, index=False)
-    else:
-        print(f'Invalid filename extension: {ext}')
-
+def print_untagged(df):
     untagged = df['tags'].str.len() == 0
     pd.set_option('max_rows', 100)
     pd.set_option('max_colwidth', 80)
@@ -135,6 +117,32 @@ def bookmarkfolder2file(path, dest):
 
     untagged_count = (untagged).sum()
     print(f'Untagged rows: {untagged_count}')
+
+
+def save_df(df, dest, cols=['tags', 'Title', 'url']):
+    if dest is None:
+        outfile = 'my_bookmarks.csv'
+    else:
+        outfile = dest
+
+    filename, ext = os.path.splitext(outfile)
+    if ext == '.csv':
+        print(f"Exporting {len(df)} bookmarks to {outfile}")
+        print('Sorting dataframe by tags')
+        df = df.sort_values('tags').reset_index(drop=True)
+        df[cols].to_csv(outfile, index=False)
+    else:
+        print(f'Invalid filename extension: {ext}')
+
+
+def bookmarkfolder2file(path, dest):
+    folder = os.path.abspath(path)
+    df = bookmarkfolder2df(folder)
+    if df is None:
+        return
+    df = add_tags(df)
+    save_df(df, dest)
+    print_untagged(df)
     return df
 
 
@@ -184,5 +192,15 @@ if __name__ == "__main__":
     parser.add_argument('path', nargs='?', default='.')
     parser.add_argument('--output', default=None)
     args = parser.parse_args()
-    df = bookmarkfolder2file(args.path, args.output)
+    if args.path.endswith('.csv'):
+        df = pd.read_csv(args.path)
+        print(df.columns)
+        df['Title'] = df['Title'].astype(str)
+        df['url'] = df['url'].astype(str)
+        df = add_tags(df)
+        save_df(df, dest=args.output, cols=['tags', 'Title', 'url'])
+        print_untagged(df)
+    else:
+        df = bookmarkfolder2file(args.path, args.output)
+
     upload_df_to_gdrive(df)
