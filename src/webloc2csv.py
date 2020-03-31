@@ -167,24 +167,21 @@ def upload_df_to_gdrive(df):
     append_df(ws, df)
 
 
-with open('tag_keywords.json') as f:
+# ----- Load Parameters -----
+SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+
+with open(os.path.join(SCRIPT_FOLDER, 'tag_keywords.json')) as f:
     tag_keywords = json.load(f)
 
-with open('tag_urls.json') as f:
+with open(os.path.join(SCRIPT_FOLDER, 'tag_urls.json')) as f:
     tag_urls = json.load(f)
 
+with open(os.path.join(SCRIPT_FOLDER, 'google_sheets_bookmarks.json')) as f:
+    params = json.load(f)
 
 GDRIVE_CREDENTIALS = os.getenv('GDRIVE_CREDENTIALS', None)
-GDRIVE_BOOKMARKS_SPREADSHEET = os.getenv('GDRIVE_BOOKMARKS_SPREADSHEET', None)
-ws = None
-
-if (GDRIVE_CREDENTIALS is not None) and \
-    (GDRIVE_BOOKMARKS_SPREADSHEET is not None):
-    pg_client = pygsheets.authorize(GDRIVE_CREDENTIALS)
-    sh = pg_client.open(GDRIVE_BOOKMARKS_SPREADSHEET)
-    ws = sh.sheet1
-else:
-    print('Google Drive credentials not available')
+GDRIVE_SPREADSHEET = params['GDRIVE_SPREADSHEET']
+BOOKMARKS_SPREADSHEET_ID = params['BOOKMARKS_SPREADSHEET_ID']
 
 
 if __name__ == "__main__":
@@ -192,6 +189,7 @@ if __name__ == "__main__":
     parser.add_argument('path', nargs='?', default='.')
     parser.add_argument('--output', default=None)
     args = parser.parse_args()
+
     if args.path.endswith('.csv'):
         df = pd.read_csv(args.path)
         print(df.columns)
@@ -200,7 +198,7 @@ if __name__ == "__main__":
         df = add_tags(df)
         save_df(df, dest=args.output, cols=['tags', 'Title', 'url'])
         print_untagged(df)
+        upload_df_to_gdrive(df)
     else:
         df = bookmarkfolder2file(args.path, args.output)
-
-    upload_df_to_gdrive(df)
+        upload_df_to_gdrive(df)
