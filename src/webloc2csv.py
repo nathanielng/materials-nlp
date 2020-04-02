@@ -191,6 +191,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.path.endswith('.csv'):
+        print(f'The .csv file {args.path} will be tagged')
         df = pd.read_csv(args.path)
         print(df.columns)
         df['Title'] = df['Title'].astype(str)
@@ -200,5 +201,6 @@ if __name__ == "__main__":
         print_untagged(df)
         upload_df_to_gdrive(df)
     else:
+        print(f'The files in folder {args.path} will be tagged')
         df = bookmarkfolder2file(args.path, args.output)
         upload_df_to_gdrive(df)
