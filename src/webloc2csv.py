@@ -136,13 +136,18 @@ def save_df(df, dest, cols=['tags', 'Title', 'url']):
 
 
 def bookmarkfolder2file(path, dest):
+    """
+    Loads a folder of .webloc files
+    """
     folder = os.path.abspath(path)
+    print(f'Loading bookmarks from {folder}')
     df = bookmarkfolder2df(folder)
     if df is None:
         return
     df = add_tags(df)
     save_df(df, dest)
-    print_untagged(df)
+    print(f"Saved bookmarks to: '{dest}'")
+    # print_untagged(df.head())
     return df
 
 
@@ -187,7 +192,7 @@ BOOKMARKS_SPREADSHEET_ID = params['BOOKMARKS_SPREADSHEET_ID']
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('path', nargs='?', default='.')
-    parser.add_argument('--output', default=None)
+    parser.add_argument('--output', default='tagged_bookmarks.csv')
     args = parser.parse_args()
 
     if args.path.endswith('.csv'):
@@ -203,4 +208,4 @@ if __name__ == "__main__":
     else:
         print(f'The files in folder {args.path} will be tagged')
         df = bookmarkfolder2file(args.path, args.output)
-        upload_df_to_gdrive(df)
+        # upload_df_to_gdrive(df)
