@@ -67,9 +67,12 @@ def append_worksheet_row(WS, values: list):
     Appends a row to a Google Sheets worksheet
     """
     rows = WS.row_count
-    WS.add_rows(1)
-    for i, value in enumerate(values):
-        WS.update_cell(rows+1, i+1, value)
+    try:
+        WS.add_rows(1)
+        for i, value in enumerate(values):
+            WS.update_cell(rows+1, i+1, value)
+    except gspread.exceptions.APIError as e:
+        print(f'Error adding rows to worksheet: {e}')
 
 
 def print_last_5_rows(WS):
