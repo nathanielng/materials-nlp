@@ -3,3 +3,4 @@ __pycache__
 .vscode
 
 example*.sh
+src/webloc2csv.sh
